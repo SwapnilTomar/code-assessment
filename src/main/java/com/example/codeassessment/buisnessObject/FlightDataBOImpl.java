@@ -4,15 +4,23 @@ import com.example.codeassessment.dao.FlightDataDAO;
 import com.example.codeassessment.entity.FlightData;
 import com.example.codeassessment.entity.FlightDataDTO;
 import com.univocity.parsers.common.record.Record;
+import ch.qos.logback.classic.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
 public class FlightDataBOImpl implements FlightDataBO{
+	
+	Logger logger = (Logger) LoggerFactory.getLogger(FlightDataBOImpl.class);
+	
     @Autowired
     private FlightDataDAO flightDataDAO;
+    
+    
     @Override
     public void createFlightData(List<Record> recordsList){
         List<FlightData> flightDataList = new ArrayList<FlightData>();
@@ -30,20 +38,26 @@ public class FlightDataBOImpl implements FlightDataBO{
             flightData.setSaturday(record.getString("Saturday"));
             flightDataList.add(flightData);
         });
+        
         getFlightDataDAO().createFlightData(flightDataList);
     }
 
     @Override
     public List<FlightDataDTO> getFlightInfoByDay(String dayToBeSearch){
-        List<FlightDataDTO> flightDataDTOList = new ArrayList<FlightDataDTO>();
+    	logger.debug("Going to fetch data for the day : {0} , at : {1} ",dayToBeSearch, new Date());
+        
+    	List<FlightDataDTO> flightDataDTOList = new ArrayList<FlightDataDTO>();
         List<FlightData> flightDataList = getFlightDataDAO().getFlightInfoByDay(dayToBeSearch);
+        
         flightDataList.forEach(record ->{
             FlightDataDTO flightDataDTO = new FlightDataDTO(record.getDepartureTime(),record.getDestination(),
                     record.getDestinationAirportIATA(),record.getFlightNo());
             flightDataDTOList.add(flightDataDTO);
         });
+        
         return flightDataDTOList;
     }
+    
     public FlightDataDAO getFlightDataDAO() {
         return flightDataDAO;
     }
